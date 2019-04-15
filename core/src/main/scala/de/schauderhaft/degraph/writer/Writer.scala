@@ -1,12 +1,9 @@
 package de.schauderhaft.degraph.writer
 
-import de.schauderhaft.degraph.analysis.asm.GraphBuildingClassVisitor
-import de.schauderhaft.degraph.analysis.asm.GraphBuildingClassVisitor.classNode
-
 import scala.xml.Elem
 import scala.xml.Node
-import de.schauderhaft.degraph.graph.{Graph, HierarchicGraph}
-import de.schauderhaft.degraph.model.{Node => GNode}
+import de.schauderhaft.degraph.graph.HierarchicGraph
+import de.schauderhaft.degraph.model.{ Node => GNode }
 
 /**
  * writes a graph to an graphml xml structure which can be displayed by yed in a usable form
@@ -19,7 +16,7 @@ class Writer(
         NodeWriter,
         new EdgeWriter)
 
-    def this(styler: ((GNode, GNode)) => EdgeStyle) =
+    def this(styler: (((GNode, GNode)) => EdgeStyle)) =
         this(NodeWriter, new EdgeWriter(styler))
 
     def toXml(g: HierarchicGraph): Elem = {
@@ -56,12 +53,11 @@ object NodeWriter extends ((GNode, HierarchicGraph) => Node) {
     val titleBarColor = "#F7F774"
 
     def apply(n: GNode, g: HierarchicGraph): Node = apply(n, g, 0, None)
-    def apply(n: GNode, g: HierarchicGraph, level: Int, parent: Option[AnyRef]): Node = {
+    def apply(n: GNode, g: HierarchicGraph, level: Int, parent: Option[AnyRef]): Node =
         if (g.contentsOf(n).isEmpty)
             LeafNodeWriter(n, g, level, parent)
         else
             GroupNodeWriter(n, g, level, parent)
-    }
 }
 
 object GroupNodeWriter {

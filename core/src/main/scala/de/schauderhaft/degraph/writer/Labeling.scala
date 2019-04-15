@@ -40,6 +40,7 @@ object Labeling {
     private def baseLabel(node: AnyRef): String = node match {
         case p: ParentAwareNode => baseLabel(p.head)
         case n: SimpleNode => {
+            println(n.name)
             n.name + "(" + GraphBuildingClassVisitor.jarPaths.getOrElse(n.name, "") + ")"
         }
         case _ => node.toString
