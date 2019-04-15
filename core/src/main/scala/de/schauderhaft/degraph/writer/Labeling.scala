@@ -1,5 +1,6 @@
 package de.schauderhaft.degraph.writer
 
+import de.schauderhaft.degraph.analysis.asm.GraphBuildingClassVisitor
 import de.schauderhaft.degraph.model.SimpleNode
 import de.schauderhaft.degraph.model.ParentAwareNode
 
@@ -38,7 +39,9 @@ object Labeling {
 
     private def baseLabel(node: AnyRef): String = node match {
         case p: ParentAwareNode => baseLabel(p.head)
-        case n: SimpleNode => n.name
+        case n: SimpleNode => {
+            n.name + "(" + GraphBuildingClassVisitor.jarPaths.getOrElse(n.name, "") + ")"
+        }
         case _ => node.toString
     }
 }
