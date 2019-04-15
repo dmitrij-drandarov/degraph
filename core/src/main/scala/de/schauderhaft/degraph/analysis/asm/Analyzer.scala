@@ -14,7 +14,7 @@ object Analyzer extends AnalyzerLike {
 
     def readStream(reader: ClassReader, name: String): Unit = {
       try {
-        reader.accept(new GraphBuildingClassVisitor(g), 0)
+        reader.accept(new GraphBuildingClassVisitor(g, name), 0)
       } catch {
         case e: Exception =>
           println("Something went wrong when analyzing " + name)
@@ -30,7 +30,7 @@ object Analyzer extends AnalyzerLike {
     def analyze(f: File) = {
       if (f.getName.endsWith(".class")) {
         val reader = new ClassReader(new BufferedInputStream(new FileInputStream(f)))
-        readStream(reader, f.getName)
+        readStream(reader, f.getAbsolutePath)
       } else {
         val zipFile = new ZipFile(f)
         val entries = zipFile.entries()
@@ -38,7 +38,7 @@ object Analyzer extends AnalyzerLike {
           val e = entries.nextElement()
           if (e.getName.endsWith(".class")) {
             val reader = new ClassReader(zipFile.getInputStream(e))
-            readStream(reader, e.getName)
+            readStream(reader, f.getAbsolutePath)
           }
         }
       }

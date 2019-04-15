@@ -1,5 +1,7 @@
 package de.schauderhaft.degraph.writer
 
+import de.schauderhaft.degraph.analysis.asm.GraphBuildingClassVisitor
+
 import scala.xml.Elem
 import scala.xml.Node
 import de.schauderhaft.degraph.graph.HierarchicGraph
@@ -16,10 +18,73 @@ class Writer(
         NodeWriter,
         new EdgeWriter)
 
-    def this(styler: (((GNode, GNode)) => EdgeStyle)) =
+    def this(styler: ((GNode, GNode)) => EdgeStyle) =
         this(NodeWriter, new EdgeWriter(styler))
 
+    def injectJars(g: HierarchicGraph, n: GNode): Unit = {
+//        def splits = n.name.split(" x ")
+//        if (n.name.contains(" x ")) {
+//            val clazz = splits(splits.length - 2)
+//            println(clazz)
+//            n.name = n.name.replace(clazz, clazz + "(" + GraphBuildingClassVisitor.jarPaths.getOrElse(clazz, "") + ")")
+//        } else {
+//            n.name = n.name + "(" + GraphBuildingClassVisitor.jarPaths.getOrElse(n.name, "") + ")"
+//        }
+//        println(n.name)
+//
+//        println("(" + g.connectionsOf(n).mkString("_") + ")")
+//        if (g.connectionsOf(n).nonEmpty) {
+//            print("(")
+//            for (conNode <- g.connectionsOf(n)) {
+//                print(conNode.name + " | ")
+//
+//                conNode.name = conNode.name + "(" + GraphBuildingClassVisitor.jarPaths.getOrElse(conNode.name, "") + ")"
+//            }
+//            for (conNode <- g.connectionsOf(n)) {
+//                println()
+//                println()
+//                println()
+//            }
+//            println(")\n")
+//        }
+
+        def splits = n.name.split(" x ")
+        if (n.name.contains(" x ")) {
+            val clazz = splits(splits.length - 2)
+            println(clazz)
+            n.name = n.name.replace(clazz, clazz + "()")
+        } else {
+            n.name = n.name + "()"
+        }
+        println(n.name)
+
+        println("(" + g.connectionsOf(n).mkString("_") + ")")
+        if (g.connectionsOf(n).nonEmpty) {
+            print("(")
+            for (conNode <- g.connectionsOf(n)) {
+                print(conNode.name + " | ")
+
+                conNode.name = conNode.name + "()"
+            }
+            for (conNode <- g.connectionsOf(n)) {
+                println()
+                println()
+                println()
+            }
+            println(")\n")
+        }
+    }
+
     def toXml(g: HierarchicGraph): Elem = {
+        for (elem <- g.allNodes) {
+            println(elem.name)
+
+            injectJars(g, elem)
+
+            println(elem.name)
+            println()
+        }
+
         <graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:yed="http://www.yworks.com/xml/yed/3" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://www.yworks.com/xml/schema/graphml/1.1/ygraphml.xsd">
             <key for="graphml" id="d0" yfiles.type="resources"/>
             <key for="port" id="d1" yfiles.type="portgraphics"/>
@@ -53,11 +118,12 @@ object NodeWriter extends ((GNode, HierarchicGraph) => Node) {
     val titleBarColor = "#F7F774"
 
     def apply(n: GNode, g: HierarchicGraph): Node = apply(n, g, 0, None)
-    def apply(n: GNode, g: HierarchicGraph, level: Int, parent: Option[AnyRef]): Node =
+    def apply(n: GNode, g: HierarchicGraph, level: Int, parent: Option[AnyRef]): Node = {
         if (g.contentsOf(n).isEmpty)
             LeafNodeWriter(n, g, level, parent)
         else
             GroupNodeWriter(n, g, level, parent)
+    }
 }
 
 object GroupNodeWriter {
@@ -106,17 +172,21 @@ object LeafNodeWriter {
     import NodeWriter.colorScheme
     private def id(n: AnyRef) = n.toString
 
-    def apply(n: AnyRef, g: HierarchicGraph, level: Int, parent: Option[AnyRef]) = <node id={ id(n) }>
-                                                                                       <data key="d5"/>
-                                                                                       <data key="d6">
-                                                                                           <y:ShapeNode>
-                                                                                               <y:Fill color={ colorScheme(level) } transparent="false"/>
-                                                                                               <y:BorderStyle color="#000000" type="line" width="1.0"/>
-                                                                                               <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" modelName="internal" modelPosition="c" textColor="#000000" visible="true" x="-33.359375" y="5.6494140625">{ Labeling(n, parent) }</y:NodeLabel>
-                                                                                               <y:Shape type="rectangle"/>
-                                                                                           </y:ShapeNode>
-                                                                                       </data>
-                                                                                   </node>
+    def apply(n: AnyRef, g: HierarchicGraph, level: Int, parent: Option[AnyRef]) = {
+        <node id={id(n)}>
+            <data key="d5"/>
+            <data key="d6">
+                <y:ShapeNode>
+                    <y:Fill color={colorScheme(level)} transparent="false"/>
+                    <y:BorderStyle color="#000000" type="line" width="1.0"/>
+                    <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" modelName="internal" modelPosition="c" textColor="#000000" visible="true" x="-33.359375" y="5.6494140625">
+                        {Labeling(n, parent)}
+                    </y:NodeLabel>
+                    <y:Shape type="rectangle"/>
+                </y:ShapeNode>
+            </data>
+        </node>
+    }
 }
 
 class EdgeWriter(

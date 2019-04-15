@@ -21,5 +21,20 @@ object PackageCategorizer extends Function1[AnyRef, Node] {
             name.substring(0, lastDotIndex)
         else
             name
+
+//        val lastJarIndex = name.lastIndexOf("(")
+//        var lastDotIndex = -1
+//
+//        if (lastJarIndex > 0)
+//            lastDotIndex = name.substring(0, lastJarIndex).lastIndexOf('.')
+//        else
+//            lastDotIndex = name.lastIndexOf('.')
+//
+//        if (lastDotIndex >= 0 & lastJarIndex > 0)
+//            name.substring(0, lastDotIndex) + " " + name.substring(lastJarIndex, name.length)
+//        else if (lastDotIndex >= 0)
+//            name.substring(0, lastDotIndex)
+//        else
+//            name
     }
 }

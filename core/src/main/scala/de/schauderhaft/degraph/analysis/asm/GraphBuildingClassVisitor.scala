@@ -4,10 +4,14 @@ import de.schauderhaft.degraph.graph.Graph
 import de.schauderhaft.degraph.model.SimpleNode
 import org.objectweb.asm._
 
+import scala.collection.mutable
+
 
 object GraphBuildingClassVisitor {
   val SinglePattern = """\[*L([\w/$]+);""".r
   val multiPattern = """(?<=L)([\w/$]+)(?=[;<])""".r
+
+  val jarPaths: mutable.Map[String, String] = mutable.HashMap()
 
   def classNode(slashSeparatedName: String): SimpleNode = {
     if (slashSeparatedName.contains(";"))
@@ -36,7 +40,7 @@ object GraphBuildingClassVisitor {
   }
 }
 
-class GraphBuildingClassVisitor(g: Graph) extends ClassVisitor(Opcodes.ASM5) {
+class GraphBuildingClassVisitor(g: Graph, jarPath: String) extends ClassVisitor(Opcodes.ASM5) {
 
   import de.schauderhaft.degraph.analysis.asm.GraphBuildingClassVisitor._
 
@@ -66,6 +70,14 @@ class GraphBuildingClassVisitor(g: Graph) extends ClassVisitor(Opcodes.ASM5) {
 
   override def visit(version: Int, access: Int, name: String, signature: String, superName: String, interfaces: Array[String]): Unit = {
     currentClass = classNode(name)
+
+    val cleanName = name.replace('/', '.')
+
+    if (!jarPaths.contains(cleanName)) {
+      jarPaths.put(cleanName, jarPath)
+    } else {
+      jarPaths(cleanName) = jarPaths(cleanName) + "_" + jarPath
+    }
 
     // finds type parameters
     classNodeFromDescriptor(signature).foreach(g.connect(currentClass, _))
