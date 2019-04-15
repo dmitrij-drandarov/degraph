@@ -41,7 +41,7 @@ object Labeling {
         case p: ParentAwareNode => baseLabel(p.head)
         case n: SimpleNode => {
             val jarPath = GraphBuildingClassVisitor.jarPaths.getOrElse(n.name, "")
-            println(n.name + " (" + jarPath + ")")
+            println(jarPath + " (" + n.name + ")")
             if (jarPath.isEmpty) n.name else n.name + "(" + jarPath + ")"
         }
         case _ => node.toString

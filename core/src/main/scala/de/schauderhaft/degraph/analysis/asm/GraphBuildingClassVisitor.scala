@@ -75,10 +75,10 @@ class GraphBuildingClassVisitor(g: Graph, jarPath: String) extends ClassVisitor(
 
     if (!jarPaths.contains(cleanName)) {
       jarPaths.put(cleanName, jarPath)
-      println(cleanName + " (" + jarPath + ")")
+      println(jarPath + " (" + cleanName + ")")
     } else {
       jarPaths(cleanName) = jarPaths(cleanName) + "_" + jarPath
-      println(cleanName + " (" + jarPaths(cleanName) + ")")
+      println(jarPaths(cleanName) + " (" + cleanName + ")")
     }
 
     // finds type parameters
